@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Champions Gamer</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%237b1428'/><text x='50' y='72' font-size='64' text-anchor='middle'>⭐</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Paleta: negro profundo, bordó y metales ===== */
+:root{--bg:#121212;--panel:#1a1a1a;--panel2:#242124;--line:#3a2a30;--burg:#7b1428;--burg2:#a51e3c;--glow:#a51e3c66;--gold:#d4af37;--silver:#c4c4cc;--bronze:#cd7f32;--text:#eee;--muted:#9a9199;--ok:#7fd48a;--bad:#ff6b7f}
+*{box-sizing:border-box;margin:0}
+body{background:radial-gradient(800px 400px at 80% -5%,#7b142822,transparent),var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;padding:76px 16px 30px;min-height:100vh}
+h1,h2,h3,th,.num{font-family:Cinzel,Georgia,serif}
+/* ===== Navbar fija ===== */
+nav{position:fixed;top:0;left:0;right:0;z-index:20;background:#0b0b0bf2;border-bottom:2px solid var(--burg);display:flex;align-items:center;gap:6px;padding:8px 14px;overflow-x:auto}
+nav .brand{display:flex;align-items:center;gap:10px;font:700 1.25rem Cinzel,serif;letter-spacing:.5px;color:var(--gold);margin-right:14px;white-space:nowrap;text-shadow:0 0 14px #d4af3744}
+.logo-s{width:40px;height:40px;flex:none;filter:drop-shadow(0 0 8px #a51e3c99);transition:all .3s ease}
+nav .brand:hover .logo-s{transform:rotate(-8deg) scale(1.08)}
+nav button{background:none;border:1px solid transparent;color:var(--muted);padding:9px 14px;border-radius:8px;white-space:nowrap;box-shadow:none}
+nav button:hover{color:var(--text);border-color:var(--line);box-shadow:none;transform:translateY(-2px)}
+nav button.active{background:var(--burg);color:#fff;border-color:var(--burg2)}
+/* ===== Vistas con fade-in ===== */
+.view{display:none;max-width:1200px;margin:0 auto}
+.view.active{display:block;animation:fadeIn .45s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes rise{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+.card{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--burg);border-radius:14px;padding:18px;box-shadow:0 8px 24px #0008;transition:all .3s ease}
+.card h2{font-size:1.1rem;color:var(--gold);margin-bottom:10px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:16px}
+label{display:block;font-size:.8rem;color:var(--muted);margin:10px 0 4px}
+input,select,textarea{width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px 11px;font:inherit;font-size:.92rem;transition:all .3s ease}
+input:hover,select:hover,textarea:hover{border-color:var(--burg2)}
+textarea{resize:vertical;min-height:54px}input[type=file]{padding:7px;font-size:.8rem}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* ===== Botones: sube 3px + glow bordó ===== */
+button{cursor:pointer;border:1px solid var(--burg2);border-radius:9px;padding:10px 14px;font:600 .9rem Inter,sans-serif;color:#fff;background:linear-gradient(135deg,var(--burg2),var(--burg));transition:all .3s ease}
+button:hover{transform:translateY(-5px);box-shadow:0 8px 20px var(--glow);border-color:var(--gold)}
+button:active{transform:translateY(0) scale(.97)}
+button.full{width:100%;margin-top:14px}
+button.ghost{background:var(--panel2);border-color:var(--line);color:var(--silver);padding:8px 12px;font-size:.82rem}
+.msg{font-size:.82rem;margin-top:8px;min-height:1em;color:var(--ok)}.msg.err{color:var(--bad)}
+.results{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.results input{display:none}
+.results label{margin:0;text-align:center;padding:9px 4px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);cursor:pointer;font-size:.82rem;transition:all .3s ease}
+.results label:hover{transform:translateY(-2px);border-color:var(--burg2)}
+.results input:checked+label{border-color:var(--gold);color:var(--gold);background:#d4af3714}
+.mrow{display:grid;grid-template-columns:1fr 80px 80px;gap:8px;align-items:center;margin-top:8px;font-size:.88rem;animation:fadeIn .4s ease}
+.mrow.head{color:var(--muted);font-size:.76rem;margin-top:12px}.mrow input{padding:7px}
+.av{width:38px;height:38px;border-radius:50%;background:var(--panel2) center/cover;display:inline-grid;place-items:center;font:700 .85rem Cinzel;color:var(--gold);border:2px solid var(--burg2);vertical-align:middle}
+/* ===== Ranking ===== */
+.banner{height:340px;border-radius:12px;background:linear-gradient(135deg,var(--burg),#1b0a10) center/cover;position:relative;overflow:hidden;margin:12px 0;border:1px solid var(--line)}
+.banner::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,#121212f0,transparent 70%)}
+.banner h2{position:absolute;left:18px;bottom:12px;z-index:1;font-size:2.4rem;color:var(--text);text-shadow:0 2px 12px #000;margin:0}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:620px}
+th{font-size:.76rem;color:var(--gold);text-align:center;padding:10px 8px;border-bottom:2px solid var(--burg)}
+th:nth-child(3),td:nth-child(3){text-align:left}
+td{text-align:center;padding:10px 8px;border-bottom:1px solid #ffffff10}
+tbody tr{cursor:pointer;transition:all .3s ease;animation:fadeIn .5s ease both}
+tbody tr:hover{background:var(--panel2);box-shadow:inset 3px 0 0 var(--burg2)}
+td.pos{font-size:1.2rem}td.pts{font:700 1.15rem Cinzel;color:var(--gold)}td.name{font-weight:600}
+.badge{display:inline-block;margin-left:5px;font-size:1rem;cursor:help;filter:drop-shadow(0 0 4px #d4af3788);transition:all .3s ease}
+.badge:hover{transform:scale(1.35) rotate(-8deg)}
+.w{color:var(--ok)}.l{color:var(--bad)}
+.legend{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:.8rem;background:var(--panel2);border:1px solid var(--gold);color:var(--gold);border-radius:20px;padding:5px 12px}
+.empty{text-align:center;color:var(--muted);padding:26px 10px}
+.hist{max-height:300px;overflow:auto;font-size:.84rem;margin-top:8px}
+.hist div{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid #ffffff10;color:var(--muted)}
+.hist b{color:var(--text);font-weight:500}.hist button{padding:2px 8px;background:none;border:0;color:var(--bad);font-size:1rem}
+.item{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid #ffffff10;font-size:.88rem}
+.item small{color:var(--muted);display:block}
+.mrow2{display:flex;gap:6px;margin-top:6px}
+/* ===== Galería de jugadores ===== */
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:26px;margin-top:16px;align-items:start}
+.pcard{background:linear-gradient(180deg,#2a1118,var(--panel) 55%);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 8px 24px #0008;transition:all .3s ease;animation:rise .6s ease both;animation-delay:calc(var(--i) * 70ms)}
+.pcard:hover{transform:translateY(-5px);box-shadow:0 14px 34px var(--glow);border-color:var(--burg2)}
+.pphoto{height:210px;background:var(--panel2) center/cover;display:grid;place-items:center;font:700 4rem Cinzel;color:var(--gold);position:relative}
+.ovr{position:absolute;top:12px;left:12px;z-index:1;font:700 1rem Cinzel;color:#121212;background:linear-gradient(135deg,var(--gold),var(--bronze));border-radius:8px;padding:3px 10px;box-shadow:0 2px 10px #000a}
+.skills{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}
+.sk{position:relative;background:#d4af3710;border:1px solid #d4af3744;border-radius:10px;padding:10px 6px;text-align:center;transition:all .3s ease}
+.sk:hover{transform:translateY(-3px);box-shadow:0 6px 16px var(--glow);border-color:var(--gold)}
+.sv{display:block;font:700 1.4rem Cinzel,serif;color:var(--gold);word-break:break-word}
+.sn{display:block;font-size:.72rem;color:var(--muted);margin-top:2px}
+.sk button{position:absolute;top:2px;right:2px;background:none;border:0;padding:0 5px;color:var(--muted);font-size:.9rem}.sk button:hover{transform:none;box-shadow:none;color:var(--bad)}
+.srow{display:grid;grid-template-columns:1fr 80px auto;gap:6px;margin-top:6px}
+.pphoto::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,#1a1a1a,transparent 60%)}
+.pbody{padding:0 16px 16px;margin-top:-34px;position:relative;z-index:1}
+.pbody h3{font-size:1.4rem;color:var(--text);text-shadow:0 2px 10px #000}
+.pbody .d{color:var(--muted);font-size:.82rem;font-style:italic;margin:2px 0 10px;min-height:1em}
+.stat{display:grid;grid-template-columns:84px 1fr 28px;gap:8px;align-items:center;font-size:.8rem;margin:5px 0}
+.stat i{height:7px;border-radius:5px;background:var(--panel2);overflow:hidden}
+.stat i b{display:block;height:100%;background:linear-gradient(90deg,var(--burg2),var(--gold));transition:width .8s ease}
+.cust{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.cs{font-size:.76rem;background:#d4af3714;border:1px solid #d4af3766;color:var(--gold);border-radius:20px;padding:4px 6px 4px 11px;display:inline-flex;gap:6px;align-items:center;transition:all .3s ease}
+.cs:hover{background:#d4af3730;transform:translateY(-2px)}
+.cs button{background:none;border:0;padding:0 4px;color:var(--muted);font-size:.95rem}.cs button:hover{transform:none;box-shadow:none;color:var(--bad)}
+.cform{display:none;gap:6px;margin:8px 0}.cform.open{display:grid;grid-template-columns:1fr 70px;animation:fadeIn .3s ease}
+.cform button{grid-column:1/-1;padding:7px}
+.pact{display:flex;gap:6px;margin-top:8px}.pact button{flex:1;font-size:.78rem;padding:8px 6px}
+/* ===== Análisis ===== */
+.profile{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:14px;animation:fadeIn .5s ease}
+.photo{width:130px;height:130px;border-radius:50%;background:var(--panel2) center/cover;border:3px solid var(--gold);display:grid;place-items:center;font:700 2.6rem Cinzel;color:var(--gold);box-shadow:0 0 22px #d4af3744}
+.metric{display:flex;justify-content:space-between;align-items:center;background:var(--panel2);border-radius:10px;padding:12px 14px;margin-top:8px;border-left:4px solid var(--burg2);transition:all .3s ease;animation:fadeIn .5s ease}
+.metric:hover{transform:translateY(-5px);box-shadow:0 8px 20px var(--glow)}
+.metric.lead{border-left-color:var(--gold)}.metric .num{font-size:1.4rem;color:var(--gold)}
+@media(max-width:820px){.cols{grid-template-columns:1fr}.banner{height:210px}nav .brand .bt{display:none}}
+/* ===== Carta estilo FIFA Ultimate Team (escudo) ===== */
+.gcell{display:flex;flex-direction:column;align-items:center;gap:12px;animation:rise .6s ease both;animation-delay:calc(var(--i) * 70ms)}
+.fut-wrap{width:250px;max-width:100%;filter:drop-shadow(0 8px 14px #000b);transition:all .3s ease}
+.fut-wrap:hover{transform:translateY(-5px);filter:drop-shadow(0 0 18px #a51e3c) drop-shadow(0 10px 14px #000b)}
+.fut{--shield:polygon(10% 0,90% 0,100% 7%,100% 66%,92% 80%,50% 100%,8% 80%,0 66%,0 7%);position:relative;aspect-ratio:5/7.2;clip-path:var(--shield);background:linear-gradient(145deg,#fff3b8,#b98a1c);color:#2a1a00;font-family:'Barlow Condensed',Impact,sans-serif}
+.fut::before{content:'';position:absolute;inset:5px;clip-path:var(--shield);background:repeating-linear-gradient(115deg,#ffffff14 0 2px,transparent 2px 7px),radial-gradient(circle at 30% 12%,#fff6c4aa,transparent 55%),linear-gradient(165deg,#f3dc7a,#d9b23f 50%,#a8791a)}
+.fut>*{position:absolute;z-index:1}
+.f-rate{top:11%;left:13%;display:flex;flex-direction:column;align-items:center;line-height:1}
+.f-rate b{font-size:2.8rem;font-weight:700}.f-rate i{font-style:normal;font-size:1.4rem;margin-top:4px}
+.f-photo{top:9%;left:34%;width:54%;aspect-ratio:1;border-radius:50%;background:#c9a22e center/cover;border:3px solid #2a1a00;display:grid;place-items:center;font-size:2.6rem;font-weight:700}
+.f-name{top:54%;left:12%;right:12%;text-align:center;font-weight:700;font-size:1.55rem;text-transform:uppercase;letter-spacing:.5px;padding-bottom:3px;border-bottom:1px solid #2a1a0099;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f-stats{top:65%;left:14%;right:14%;display:grid;grid-template-columns:1fr 1fr}
+.f-stats>div{padding:0 6px}.f-stats>div:first-child{border-right:1px solid #2a1a0055}
+.f-s{display:flex;gap:6px;align-items:baseline;justify-content:center;font-size:1.1rem;line-height:1.35}
+.f-s b{font-weight:700;font-size:1.3rem}.f-s span{font-weight:500;letter-spacing:.5px}
+.gm{width:100%;max-width:260px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px}
+.gm .cust{margin:0 0 6px}
+.afut{display:grid;grid-template-columns:260px 1fr;gap:24px;align-items:start;margin-top:14px;animation:fadeIn .5s ease}
+@media(max-width:820px){.afut{grid-template-columns:1fr}.afut .fut-wrap{margin:0 auto}}
+.irow{display:flex;gap:10px;justify-content:space-between;padding:9px 0;border-bottom:1px solid #ffffff10;font-size:.9rem}
+.irow span{color:var(--muted);white-space:nowrap}.irow b{font-weight:500;text-align:right;word-break:break-word}
+.gdet{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:12px}
+.gdet summary{cursor:pointer;font:600 1rem Cinzel,serif;color:var(--gold)}
+.gdet .metric{background:var(--panel)}
+.ythidden{position:fixed;left:0;bottom:0;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
+.audiobar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--burg2);border-radius:12px;padding:10px 14px;margin:10px 0 4px}
+.audiobar #playBtn{width:42px;height:42px;padding:0;border-radius:50%;font-size:1.1rem}
+.audiobar #songInfo{flex:1;min-width:160px;font-size:.85rem;color:var(--silver)}
+.audiobar input[type=range]{width:120px;padding:0;accent-color:var(--burg2)}
+.mtabs{display:flex;gap:8px;margin:18px 0 6px}.mtabs button{flex:1}
+.mtabs .off{background:var(--panel2);border-color:var(--line);color:var(--silver)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:8px;margin:12px 0}
+.kpi{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 6px;text-align:center;transition:all .3s ease;animation:fadeIn .5s ease}
+.kpi:hover{transform:translateY(-5px);box-shadow:0 8px 20px var(--glow);border-color:var(--burg2)}
+.kpi b{display:block;font:700 1.5rem Cinzel,serif;color:var(--gold)}.kpi small{color:var(--muted);font-size:.72rem}
+.sub{font:600 .95rem Cinzel,serif;color:var(--silver);margin:16px 0 0}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.hero{display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap;text-align:center;padding:26px 18px;margin-bottom:16px;border-radius:16px;border:1px solid var(--line);border-top:3px solid var(--burg);background:radial-gradient(500px 200px at 50% 0,#7b142855,transparent),var(--panel);box-shadow:0 8px 24px #0008;animation:fadeIn .6s ease}
+.hero svg{width:120px;height:120px;filter:drop-shadow(0 0 18px #a51e3caa);animation:glow 3.5s ease-in-out infinite}
+@keyframes glow{50%{filter:drop-shadow(0 0 28px #d4af37aa)}}
+.hero h1{font-size:clamp(1.9rem,6vw,3.2rem);letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,#fff2b0,#d4af37 45%,#a8791a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--silver);margin-top:6px;font-size:.95rem}
+</style>
+</head>
+<body>
+<!-- ===== LOGO SVG: balón de estrellas (starball) en bordó, dorado y plata ===== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <radialGradient id="cgBurg" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="#b32244"/><stop offset=".6" stop-color="#6f1226"/><stop offset="1" stop-color="#2a0a12"/></radialGradient>
+    <linearGradient id="cgGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff2b0"/><stop offset=".5" stop-color="#d4af37"/><stop offset="1" stop-color="#8c6b14"/></linearGradient>
+    <linearGradient id="cgSilver" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#c4c4cc"/><stop offset="1" stop-color="#7f7f8c"/></linearGradient>
+    <path id="cgStar" d="M0.00,-17.00 L4.00,-5.50 L16.17,-5.25 L6.47,2.10 L9.99,13.75 L0.00,6.80 L-9.99,13.75 L-6.47,2.10 L-16.17,-5.25 L-4.00,-5.50 Z"/>
+  </defs>
+  <symbol id="cgLogo" viewBox="0 0 120 120">
+    <!-- balón central -->
+    <circle cx="60" cy="60" r="30" fill="url(#cgSilver)" stroke="#3a0a14" stroke-width="1.2"/>
+    <g stroke="#3a0a14" stroke-width="1.4" stroke-linecap="round"><line x1="60.00" y1="52.00" x2="60.00" y2="38.00"/><line x1="67.61" y1="57.53" x2="80.92" y2="53.20"/><line x1="64.70" y1="66.47" x2="72.93" y2="77.80"/><line x1="55.30" y1="66.47" x2="47.07" y2="77.80"/><line x1="52.39" y1="57.53" x2="39.08" y2="53.20"/></g>
+    <g fill="#5a0e1d"><path d="M60.00,40.00 L54.29,35.85 L56.47,29.15 L63.53,29.15 L65.71,35.85 Z"/><path d="M79.02,53.82 L81.20,47.11 L88.25,47.11 L90.43,53.82 L84.73,57.97 Z"/><path d="M71.76,76.18 L78.81,76.18 L80.99,82.89 L75.28,87.03 L69.58,82.89 Z"/><path d="M48.24,76.18 L50.42,82.89 L44.72,87.03 L39.01,82.89 L41.19,76.18 Z"/><path d="M40.98,53.82 L35.27,57.97 L29.57,53.82 L31.75,47.11 L38.80,47.11 Z"/></g>
+    <path d="M60.00,51.50 L68.08,57.37 L65.00,66.88 L55.00,66.88 L51.92,57.37 Z" fill="#5a0e1d" stroke="#3a0a14" stroke-width=".8" stroke-linejoin="round"/>
+    <!-- 8 estrellas formando el balón (estilo "starball") -->
+    <g fill="url(#cgSilver)" stroke="url(#cgGold)" stroke-width=".9" stroke-linejoin="round">
+      <use href="#cgStar" transform="translate(60 60) rotate(0) translate(0 -38)"/>
+      <use href="#cgStar" transform="translate(60 60) rotate(45) translate(0 -38)"/>
+      <use href="#cgStar" transform="translate(60 60) rotate(90) translate(0 -38)"/>
+      <use href="#cgStar" transform="translate(60 60) rotate(135) translate(0 -38)"/>
+      <use href="#cgStar" transform="translate(60 60) rotate(180) translate(0 -38)"/>
+      <use href="#cgStar" transform="translate(60 60) rotate(225) translate(0 -38)"/>
+      <use href="#cgStar" transform="translate(60 60) rotate(270) translate(0 -38)"/>
+      <use href="#cgStar" transform="translate(60 60) rotate(315) translate(0 -38)"/>
+    </g>
+  </symbol>
+</svg>
+
+<!-- ===== NAVBAR ===== -->
+<nav>
+  <span class="brand"><svg class="logo-s" viewBox="0 0 120 120" role="img" aria-label="Logo Champions Gamer"><use href="#cgLogo"/></svg><span class="bt">Champions Gamer</span></span>
+  <button data-view="global" class="active">Ranking Global</button>
+  <button data-view="ranking">Ranking por Juego</button>
+  <button data-view="registro">Registrar Partida</button>
+  <button data-view="galeria">Galería de Jugadores</button>
+  <button data-view="juegos">Juegos</button>
+  <button data-view="analisis">Análisis Avanzado</button>
+</nav>
+
+<!-- ===== VISTA: RANKING ===== -->
+<section class="view active" id="v-global">
+  <div class="hero">
+    <svg viewBox="0 0 120 120" role="img" aria-label="Logo Champions Gamer"><use href="#cgLogo"/></svg>
+    <div><h1>Champions Gamer</h1></div>
+  </div>
+  <div class="card">
+  <h2>Ranking Global</h2>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">Suma de los puntos de cada jugador en todos los juegos en los que participa.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>#</th><th></th><th>Jugador</th><th>Juegos</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>% Vic.</th><th>PTS</th></tr></thead>
+    <tbody id="gbody"></tbody>
+  </table></div>
+</div></section>
+
+<!-- ===== VISTA: RANKING POR JUEGO ===== -->
+<section class="view" id="v-ranking"><div class="card">
+  <select id="rGame" aria-label="Elegir juego"></select>
+  <div class="banner" id="banner"><h2 id="bannerTitle"></h2></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>#</th><th></th><th>Jugador</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>% Vic.</th><th>PTS</th></tr></thead>
+    <tbody id="tbody"></tbody>
+  </table></div>
+  <div class="legend" id="legend"></div>
+</div></section>
+
+<!-- ===== VISTA: REGISTRAR PARTIDA ===== -->
+<section class="view" id="v-registro"><div class="cols">
+  <div class="card">
+    <h2>Registrar partida</h2>
+    <label for="mGame">Juego</label><select id="mGame"></select>
+    <div class="grid2">
+      <div><label for="p1">Jugador 1</label><select id="p1"></select></div>
+      <div><label for="p2">Jugador 2</label><select id="p2"></select></div>
+    </div>
+    <label>Resultado</label>
+    <div class="results">
+      <input type="radio" name="res" id="r1" value="p1" checked><label for="r1">Gana J1</label>
+      <input type="radio" name="res" id="r0" value="draw"><label for="r0">Empate</label>
+      <input type="radio" name="res" id="r2" value="p2"><label for="r2">Gana J2</label>
+    </div>
+    <div id="metricInputs"></div>
+    <button class="ghost" id="toggleMet" style="margin-top:12px;width:100%">+ Agregar nueva estadística a este juego</button>
+    <div class="mrow2" id="newMetRow" style="display:none"><input id="newMetName" placeholder="Ej: Posesión de balón" maxlength="30"><button id="confirmMet" type="button">Añadir</button></div>
+    <label for="mNotes">Notas del partido</label><textarea id="mNotes" maxlength="200" placeholder="Ej: final épica, hubo control roto..."></textarea>
+    <button class="full" id="saveMatch">Guardar partida</button><div class="msg" id="msgMatch"></div>
+  </div>
+  <div class="card"><h2>Últimas partidas</h2><div class="hist" id="hist"></div></div>
+</div></section>
+
+<!-- ===== VISTA: GALERÍA DE JUGADORES ===== -->
+<section class="view" id="v-galeria">
+  <details class="card" id="newPlayerBox">
+    <summary style="cursor:pointer;font:600 1.05rem Cinzel,serif;color:var(--gold)">+ Nuevo jugador</summary>
+    <div class="cols" style="margin-top:6px">
+      <div>
+        <label for="pName">Nombre o apodo</label><input id="pName" maxlength="24">
+        <label for="pUrl">Foto: pega una URL</label><input id="pUrl" placeholder="https://...">
+        <label for="pFile">o sube una imagen</label><input type="file" id="pFile" accept="image/*">
+        <label for="pFavs">Juegos favoritos</label><input id="pFavs" placeholder="Ej: FIFA 18, Smash Bros" maxlength="80">
+        <label for="pPrime">Juego Prime (en el que es mejor)</label><select id="pPrime"></select>
+        <label for="pDesc">Descripción corta</label><textarea id="pDesc" maxlength="140"></textarea>
+        
+      </div>
+      <div>
+        <label for="pDiscord">Discord</label><input id="pDiscord" placeholder="usuario#0000" maxlength="40">
+        <label for="pSocials">Otras redes (de broma o reales)</label><input id="pSocials" placeholder="Ej: @elcrack en TikTok" maxlength="80">
+        <label for="pSong">Canción de entrada (enlace de YouTube)</label><input id="pSong" placeholder="https://www.youtube.com/watch?v=...">
+        <label>Habilidades de broma (nombre libre y valor 0-99)</label><div id="newSkills"></div><button class="ghost" id="addSkillRow" type="button" style="margin-top:8px">+ Añadir habilidad</button>
+        <button class="full" id="addPlayer">Agregar jugador</button><div class="msg" id="msgPlayer"></div>
+      </div>
+    </div>
+  </details>
+  <div class="gallery" id="gallery"></div>
+</section>
+
+<!-- ===== VISTA: JUEGOS ===== -->
+<section class="view" id="v-juegos"><div class="cols">
+  <div class="card">
+    <h2>Nuevo juego</h2>
+    <label for="gName">Nombre del juego</label><input id="gName" maxlength="30">
+    <label for="gUrl">Portada: pega una URL</label><input id="gUrl" placeholder="https://...">
+    <label for="gFile">o sube una imagen</label><input type="file" id="gFile" accept="image/*">
+    <label>Métricas específicas (ej. Goles, Atajadas, Kills)</label>
+    <div id="newMetrics"></div>
+    <button class="ghost" id="addMetricRow" style="margin-top:8px">+ Añadir métrica</button>
+    <button class="full" id="addGame">Crear juego</button><div class="msg" id="msgGame"></div>
+  </div>
+  <div class="card"><h2>Juegos creados</h2><div id="gameList"></div></div>
+</div></section>
+
+<!-- ===== VISTA: ANÁLISIS ===== -->
+<section class="view" id="v-analisis"><div class="card">
+  <h2>Análisis avanzado de jugador</h2>
+  <label for="aPlayer">Jugador</label><select id="aPlayer"></select>
+  <div class="audiobar">
+    <button id="playBtn" type="button" aria-label="Play o pausa">▶</button>
+    <div id="songInfo"></div><span>🔊</span>
+    <input type="range" id="vol" min="0" max="100" step="1" value="20" aria-label="Volumen"><span id="volVal" style="font-size:.8rem;color:var(--muted);width:34px">20%</span>
+    <div class="ythidden" aria-hidden="true"><div id="ytHost"></div></div>
+  </div>
+  <div id="analysis"></div>
+</div></section>
+
+<script>
+/* ===== 1. ESTADO Y PERSISTENCIA =====
+   state = {
+     players:[{id, name, photo, desc, favs, prime(gameId), discord, socials, song(enlace de YouTube), skills:[{id, name, value}]}],
+     games:[{id, name, cover, metrics:[{id,name}]}],
+     matches:[{id, game, p1, p2, result:'p1'|'p2'|'draw', ts, notes, m:{p1:{metricId:n}, p2:{metricId:n}}}]
+   } */
+const KEY = 'ranking-multijuego-v8';
+const ICONS = ['🏆','👟','🧤','⚔️','🔥','💎','⚡','🎯','🛡️','⭐'];
+let state = load();
+
+function load(){
+  try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && s.players && s.games && s.matches) return s; }catch(e){}
+  const mk = (name, mets) => ({id:uid(), name, cover:'', metrics:mets.map(n => ({id:uid(), name:n}))});
+  return {players:[], matches:[], games:[mk('FIFA 18',['Goles','Atajadas']), mk('PES',['Goles']), mk('League of Legends',['Kills','Asistencias']), mk('Smash Bros',['Kills'])]};
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){ alert('Almacenamiento lleno: usa URLs en lugar de imágenes subidas.'); } }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const player = id => state.players.find(p => p.id === id);
+const game = id => state.games.find(g => g.id === id);
+const nameOf = id => (player(id) || {name:'(eliminado)'}).name;
+
+/* ===== 2. IMÁGENES (Canvas -> Base64 redimensionado) ===== */
+function fileToDataURL(file, maxW, maxH){
+  return new Promise((resolve, reject) => {
+    const r = new FileReader(); r.onerror = reject;
+    r.onload = () => {
+      const img = new Image(); img.onerror = reject;
+      img.onload = () => {
+        const k = Math.min(1, maxW / img.width, maxH / img.height), c = document.createElement('canvas');
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        resolve(c.toDataURL('image/jpeg', 0.8));
+      };
+      img.src = r.result;
+    };
+    r.readAsDataURL(file);
+  });
+}
+async function pickImage(fileEl, urlEl, w, h){ return fileEl.files[0] ? fileToDataURL(fileEl.files[0], w, h) : urlEl.value.trim(); }
+const bg = src => src ? `background-image:url("${src.replace(/"/g,'%22')}")` : '';
+const initials = n => esc(n.trim().slice(0,2).toUpperCase());
+const avatar = p => `<div class="av" style="${esc(bg(p.photo))}">${p.photo ? '' : initials(p.name)}</div>`;
+
+/* ===== 3. CÁLCULO: tabla, métricas acumuladas y líderes ===== */
+function computeGame(gameId){
+  const g = game(gameId);
+  const ms = state.matches.filter(m => m.game === gameId).sort((a,b) => a.ts - b.ts);
+  const map = {};
+  const get = id => map[id] || (map[id] = {id, pj:0, pg:0, pe:0, pp:0, pts:0, pct:0, streak:0, cur:0, met:{}, opp:{}});
+  ms.forEach(m => {
+    if(!player(m.p1) || !player(m.p2)) return;
+    const a = get(m.p1), b = get(m.p2);
+    a.pj++; b.pj++;
+    const o1 = a.opp[b.id] = a.opp[b.id] || {g:0,e:0,p:0}, o2 = b.opp[a.id] = b.opp[a.id] || {g:0,e:0,p:0};
+    if(m.result === 'draw'){ o1.e++; o2.e++; } else if(m.result === 'p1'){ o1.g++; o2.p++; } else { o2.g++; o1.p++; }
+    if(m.result === 'draw'){ a.pe++; b.pe++; a.pts++; b.pts++; a.cur = b.cur = 0; }
+    else{
+      const w = m.result === 'p1' ? a : b, l = w === a ? b : a;
+      w.pg++; w.pts += 3; l.pp++; w.cur++; l.cur = 0; w.streak = Math.max(w.streak, w.cur);
+    }
+    (g ? g.metrics : []).forEach(mt => {
+      a.met[mt.id] = (a.met[mt.id] || 0) + ((m.m && m.m.p1 && m.m.p1[mt.id]) || 0);
+      b.met[mt.id] = (b.met[mt.id] || 0) + ((m.m && m.m.p2 && m.m.p2[mt.id]) || 0);
+    });
+  });
+  const rows = Object.values(map);
+  rows.forEach(r => r.pct = r.pj ? r.pg / r.pj * 100 : 0);
+  rows.sort((a,b) => b.pts - a.pts || b.pct - a.pct || nameOf(a.id).localeCompare(nameOf(b.id)));
+  // Líderes: por métrica, quien(es) tenga(n) el total más alto (> 0)
+  const leaders = {};
+  (g ? g.metrics : []).forEach(mt => {
+    const max = Math.max(0, ...rows.map(r => r.met[mt.id] || 0));
+    leaders[mt.id] = {max, ids: max > 0 ? rows.filter(r => (r.met[mt.id] || 0) === max).map(r => r.id) : []};
+  });
+  return {rows, leaders};
+}
+function badgesFor(pid, g, leaders){
+  return g.metrics.map((mt, i) => leaders[mt.id].ids.includes(pid)
+    ? `<span class="badge" title="${esc('Líder en ' + mt.name + ' (' + leaders[mt.id].max + ')')}">${ICONS[i % ICONS.length]}</span>` : '').join('');
+}
+
+/* ===== 4. ACCIONES ===== */
+async function addPlayer(){
+  const msg = $('msgPlayer'), name = $('pName').value.trim();
+  if(!name) return flash(msg,'Escribe un nombre.',true);
+  if(state.players.some(p => p.name.toLowerCase() === name.toLowerCase())) return flash(msg,'Ese jugador ya existe.',true);
+  let photo = ''; try{ photo = await pickImage($('pFile'), $('pUrl'), 400, 400); }catch(e){ return flash(msg,'No se pudo leer la imagen.',true); }
+  const skills = [...document.querySelectorAll('#newSkills .srow')].map(r => ({id:uid(), name:r.querySelector('.sn1').value.trim(), value:r.querySelector('.sv1').value.trim()})).filter(x => x.name && x.value);
+  const song = $('pSong').value.trim();
+  if(song && !ytId(song)) return flash(msg,'El enlace de YouTube no es válido.',true);
+  state.players.push({id:uid(), name, photo, skills, desc:$('pDesc').value.trim(), favs:$('pFavs').value.trim(), prime:$('pPrime').value, discord:$('pDiscord').value.trim(), socials:$('pSocials').value.trim(), song});
+  ['pName','pUrl','pFile','pFavs','pDesc','pDiscord','pSocials','pSong','pPrime'].forEach(i => $(i).value = ''); $('newSkills').innerHTML = ''; addSkillRow();
+  save(); renderAll(); flash(msg, name + ' agregado.');
+}
+// Estadística personalizada: atributo único de broma solo para ese jugador
+function addCustomStat(pid, name, value){
+  const p = player(pid); name = name.trim(); value = String(value).trim();
+  if(!p || !name || !value) return;
+  p.skills = p.skills || [];
+  p.skills.push({id:uid(), name, value});
+  save(); renderGallery(); renderAnalysis();
+}
+function deleteCustomStat(pid, sid){ const p = player(pid); p.skills = p.skills.filter(c => c.id !== sid); save(); renderGallery(); renderAnalysis(); }
+async function addGame(){
+  const msg = $('msgGame'), name = $('gName').value.trim();
+  if(!name) return flash(msg,'Escribe el nombre del juego.',true);
+  if(state.games.some(g => g.name.toLowerCase() === name.toLowerCase())) return flash(msg,'Ese juego ya existe.',true);
+  let cover = ''; try{ cover = await pickImage($('gFile'), $('gUrl'), 900, 400); }catch(e){ return flash(msg,'No se pudo leer la imagen.',true); }
+  const names = [...document.querySelectorAll('#newMetrics input')].map(i => i.value.trim()).filter(Boolean);
+  const metrics = [...new Set(names)].map(n => ({id:uid(), name:n}));
+  state.games.push({id:uid(), name, cover, metrics});
+  ['gName','gUrl','gFile'].forEach(i => $(i).value = ''); $('newMetrics').innerHTML = ''; addMetricRow();
+  save(); renderAll(); flash(msg, name + ' creado con ' + metrics.length + ' métrica(s).');
+}
+function addMetricRow(){
+  const d = document.createElement('div'); d.className = 'mrow2';
+  d.innerHTML = '<input placeholder="Nombre de la métrica" maxlength="30"><button class="ghost" type="button" title="Quitar">×</button>';
+  d.querySelector('button').onclick = () => d.remove();
+  $('newMetrics').appendChild(d);
+}
+function addMetricToGame(gid){
+  const n = (prompt('Nombre de la nueva métrica:') || '').trim(), g = game(gid);
+  if(!n || g.metrics.some(m => m.name.toLowerCase() === n.toLowerCase())) return;
+  g.metrics.push({id:uid(), name:n}); save(); renderAll();
+}
+function saveMatch(){
+  const msg = $('msgMatch'), p1 = $('p1').value, p2 = $('p2').value, g = game($('mGame').value);
+  if(state.players.length < 2) return flash(msg,'Agrega al menos 2 jugadores en la Galería.',true);
+  if(p1 === p2) return flash(msg,'Elige dos jugadores distintos.',true);
+  const m = {p1:{}, p2:{}};
+  document.querySelectorAll('#metricInputs input').forEach(i => { m[i.dataset.side][i.dataset.m] = Math.max(0, parseInt(i.value) || 0); });
+  state.matches.push({id:uid(), game:g.id, p1, p2, result:document.querySelector('input[name=res]:checked').value, ts:Date.now(), m, notes:$('mNotes').value.trim()});
+  $('rGame').value = g.id; $('mNotes').value = ''; document.querySelectorAll('#metricInputs input').forEach(i => i.value = '');
+  save(); renderAll(); flash(msg,'Partida guardada.');
+}
+function deleteMatch(id){ state.matches = state.matches.filter(m => m.id !== id); save(); renderAll(); }
+function deletePlayer(id){ if(confirm('¿Eliminar jugador? También se borrarán sus partidas.')){ state.players = state.players.filter(p => p.id !== id); state.matches = state.matches.filter(m => m.p1 !== id && m.p2 !== id); save(); renderAll(); } }
+function deleteGame(id){ if(confirm('¿Eliminar juego y sus partidas?')){ state.games = state.games.filter(g => g.id !== id); state.matches = state.matches.filter(m => m.game !== id); state.players.forEach(p => { if(p.prime === id) p.prime = ''; }); save(); renderAll(); } }
+
+/* ===== 5. RENDER ===== */
+function renderSelects(){
+  const k = {r:$('rGame').value, m:$('mGame').value, ap:$('aPlayer').value, p1:$('p1').value, p2:$('p2').value};
+  const gOpts = state.games.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join('');
+  ['rGame','mGame'].forEach(i => $(i).innerHTML = gOpts);
+  const kp = $('pPrime').value; $('pPrime').innerHTML = '<option value="">— Ninguno —</option>' + gOpts; if(game(kp)) $('pPrime').value = kp;
+  const pOpts = state.players.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  ['p1','p2','aPlayer'].forEach(i => $(i).innerHTML = pOpts);
+  if(game(k.r)) $('rGame').value = k.r; if(game(k.m)) $('mGame').value = k.m;
+  if(player(k.ap)) $('aPlayer').value = k.ap; if(player(k.p1)) $('p1').value = k.p1;
+  if(player(k.p2)) $('p2').value = k.p2; else if(state.players[1]) $('p2').value = state.players[1].id;
+}
+function renderTable(){
+  const g = game($('rGame').value);
+  $('banner').setAttribute('style', g ? bg(g.cover) : '');
+  $('bannerTitle').textContent = g ? g.name : 'Sin juegos';
+  $('legend').innerHTML = '';
+  if(!g){ $('tbody').innerHTML = ''; return; }
+  const {rows, leaders} = computeGame(g.id), medals = ['🥇','🥈','🥉'];
+  if(!rows.length){ $('tbody').innerHTML = `<tr><td colspan="9" class="empty">Nadie ha jugado ${esc(g.name)} todavía.</td></tr>`; return; }
+  $('tbody').innerHTML = rows.map((r,i) => `<tr data-id="${r.id}" tabindex="0" style="animation-delay:${i*60}ms">
+    <td class="pos">${medals[i] || i+1}</td><td>${avatar(player(r.id))}</td>
+    <td class="name">${esc(nameOf(r.id))}${badgesFor(r.id, g, leaders)}</td>
+    <td>${r.pj}</td><td class="w">${r.pg}</td><td>${r.pe}</td><td class="l">${r.pp}</td>
+    <td>${r.pct.toFixed(0)}%</td><td class="pts">${r.pts}</td></tr>`).join('');
+  $('legend').innerHTML = g.metrics.map((mt,i) => leaders[mt.id].ids.length
+    ? `<span class="chip">${ICONS[i % ICONS.length]} ${esc(mt.name)}: ${leaders[mt.id].ids.map(x => esc(nameOf(x))).join(' y ')} (${leaders[mt.id].max})</span>` : '').join('');
+}
+function renderMetricInputs(){
+  const keep = {};
+  document.querySelectorAll('#metricInputs input').forEach(i => { if(i.value !== '') keep[i.dataset.side + '|' + i.dataset.m] = i.value; });
+  buildMetricInputs();
+  document.querySelectorAll('#metricInputs input').forEach(i => { const v = keep[i.dataset.side + '|' + i.dataset.m]; if(v !== undefined) i.value = v; });
+}
+function buildMetricInputs(){
+  const g = game($('mGame').value);
+  if(!g || !g.metrics.length){ $('metricInputs').innerHTML = '<p style="color:var(--muted);font-size:.8rem;margin-top:12px">Este juego no tiene métricas específicas.</p>'; return; }
+  $('metricInputs').innerHTML = `<div class="mrow head"><span>Métricas de la partida</span><span>${esc(nameOf($('p1').value))}</span><span>${esc(nameOf($('p2').value))}</span></div>` +
+    g.metrics.map(mt => `<div class="mrow"><span>${esc(mt.name)}</span>
+      <input type="number" min="0" placeholder="0" data-side="p1" data-m="${mt.id}">
+      <input type="number" min="0" placeholder="0" data-side="p2" data-m="${mt.id}"></div>`).join('');
+}
+function renderHistory(){
+  const ms = state.matches.slice().reverse().slice(0,30);
+  $('hist').innerHTML = ms.length ? ms.map(m => {
+    const a = esc(nameOf(m.p1)), b = esc(nameOf(m.p2));
+    const t = m.result === 'draw' ? `${a} empató con ${b}` : m.result === 'p1' ? `<b>${a}</b> venció a ${b}` : `<b>${b}</b> venció a ${a}`;
+    return `<div><span>${t}<br><small>${esc((game(m.game)||{name:'?'}).name)}${m.notes ? ' · “' + esc(m.notes) + '”' : ''}</small></span><button title="Eliminar" data-del="${m.id}">×</button></div>`;
+  }).join('') : '<div class="empty">Aún no hay partidas.</div>';
+}
+// Abreviatura de 3 letras de una habilidad ("Nivel de excusas" -> EXC)
+const STOP = ['de','del','la','el','los','las','y','en','por','al','a','un','una','nivel'];
+function abbr(name){
+  const words = name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().split(/\s+/).filter(Boolean);
+  const keep = words.filter(w => !STOP.includes(w.toLowerCase()));
+  return ((keep[0] || words[0] || '???').replace(/[^A-Z0-9]/g,'') || '???').slice(0,3);
+}
+// Rating general: promedio (0-99) de las habilidades numéricas del jugador
+function rating(p){
+  const n = (p.skills || []).map(c => parseFloat(String(c.value).replace(',','.'))).filter(v => !isNaN(v)).map(v => Math.max(0, Math.min(99, v)));
+  return n.length ? Math.round(n.reduce((a,b) => a + b, 0) / n.length) : '--';
+}
+// Carta en forma de escudo; muestra hasta 6 habilidades repartidas en 2 columnas
+function futCard(p){
+  const sk = (p.skills || []).slice(0,6), half = Math.ceil(sk.length / 2);
+  const row = c => `<div class="f-s" title="${esc(c.name)}"><b>${esc(c.value)}</b><span>${abbr(c.name)}</span></div>`;
+  return `<div class="fut-wrap"><div class="fut">
+    <div class="f-rate"><b>${rating(p)}</b><i>🎮</i></div>
+    <div class="f-photo" style="${esc(bg(p.photo))}">${p.photo ? '' : initials(p.name)}</div>
+    <div class="f-name">${esc(p.name)}</div>
+    <div class="f-stats"><div>${sk.slice(0, half).map(row).join('')}</div><div>${sk.slice(half).map(row).join('')}</div></div>
+  </div></div>`;
+}
+function skillChips(p){
+  return (p.skills || []).map(c => `<span class="cs">${esc(c.name)}: <b>${esc(c.value)}</b><button title="Quitar" data-act="delstat" data-pid="${p.id}" data-sid="${c.id}">×</button></span>`).join('')
+    || '<span style="color:var(--muted);font-size:.8rem">Sin habilidades todavía.</span>';
+}
+// Galería: una carta FUT por jugador + panel para gestionar sus habilidades
+function renderGallery(){
+  if(!state.players.length){ $('gallery').innerHTML = '<div class="empty" style="grid-column:1/-1">Aún no hay jugadores. Abre "Nuevo jugador" para agregar el primero.</div>'; return; }
+  $('gallery').innerHTML = state.players.map((p,i) => `<article class="gcell" style="--i:${i}">
+      ${futCard(p)}
+      <div class="gm"><div class="cust">${skillChips(p)}</div>
+        ${(p.skills || []).length > 6 ? '<small style="color:var(--muted);font-size:.72rem">La carta muestra las primeras 6 habilidades.</small>' : ''}
+        <div class="cform"><input class="cn" placeholder="Ej: Controles rotos" maxlength="28"><input class="cv" placeholder="0-99" maxlength="10">
+          <button data-act="savestat" data-pid="${p.id}">Guardar habilidad</button></div>
+        <div class="pact"><button data-act="addstat">+ Agregar Nueva Habilidad/Estadística</button></div>
+        <div class="pact"><button class="ghost" data-act="analyze" data-pid="${p.id}">Ver análisis</button><button class="ghost" data-act="delp" data-pid="${p.id}">Eliminar</button></div>
+      </div></article>`).join('');
+}
+function renderGames(){
+  $('gameList').innerHTML = state.games.map(g => `<div class="item"><div class="av" style="border-radius:10px;${esc(bg(g.cover))}">${g.cover ? '' : '🎮'}</div>
+    <div style="flex:1"><b>${esc(g.name)}</b><small>Métricas: ${g.metrics.map(m => esc(m.name)).join(', ') || 'ninguna'}</small></div>
+    <button class="ghost" data-addm="${g.id}">+ Métrica</button><button class="ghost" data-delg="${g.id}">Eliminar juego</button></div>`).join('') || '<div class="empty">Sin juegos.</div>';
+}
+// Ranking Global: suma los puntos de cada jugador en TODOS los juegos
+function renderGlobal(){
+  const map = {};
+  state.games.forEach(g => computeGame(g.id).rows.forEach(r => {
+    const a = map[r.id] || (map[r.id] = {id:r.id, games:0, pj:0, pg:0, pe:0, pp:0, pts:0});
+    a.games++; a.pj += r.pj; a.pg += r.pg; a.pe += r.pe; a.pp += r.pp; a.pts += r.pts;
+  }));
+  const rows = Object.values(map).map(r => ({...r, pct: r.pj ? r.pg / r.pj * 100 : 0}))
+    .sort((a,b) => b.pts - a.pts || b.pct - a.pct || nameOf(a.id).localeCompare(nameOf(b.id)));
+  const medals = ['🥇','🥈','🥉'];
+  $('gbody').innerHTML = rows.length ? rows.map((r,i) => `<tr data-id="${r.id}" tabindex="0" style="animation-delay:${i*60}ms">
+    <td class="pos">${medals[i] || i+1}</td><td>${avatar(player(r.id))}</td><td class="name">${esc(nameOf(r.id))}</td>
+    <td>${r.games}</td><td>${r.pj}</td><td class="w">${r.pg}</td><td>${r.pe}</td><td class="l">${r.pp}</td>
+    <td>${r.pct.toFixed(0)}%</td><td class="pts">${r.pts}</td></tr>`).join('')
+    : '<tr><td colspan="10" class="empty">Aún no hay partidas. Registra la primera para ver el ranking global.</td></tr>';
+}
+let anaMode = 'general', anaGame = '';   // modo de vista del Análisis y juego elegido
+const kpi = (v, label) => `<div class="kpi"><b>${v}</b><small>${label}</small></div>`;
+// Análisis Avanzado: carta + perfil (siempre visibles) y dos modos: General / Por juego
+function renderAnalysis(){
+  const p = player($('aPlayer').value);
+  if(!p){ $('analysis').innerHTML = '<div class="empty">Crea jugadores en la Galería para ver su análisis.</div>'; return; }
+  const prime = game(p.prime);
+  const info = [['🎮 Juego Prime', prime ? prime.name : ''], ['⭐ Juegos favoritos', p.favs], ['💬 Discord', p.discord], ['🌐 Redes', p.socials], ['📝 Descripción', p.desc]]
+    .filter(x => x[1]).map(x => `<div class="irow"><span>${x[0]}</span><b>${esc(x[1])}</b></div>`).join('')
+    || '<div class="empty" style="padding:10px">Este jugador no tiene datos de perfil.</div>';
+
+  // Juegos en los que ha participado, con sus estadísticas y líderes de métricas
+  const list = state.games.map(g => { const {rows, leaders} = computeGame(g.id), r = rows.find(x => x.id === p.id); return r ? {g, r, leaders} : null; }).filter(Boolean);
+  let body;
+  if(!list.length){
+    body = '<div class="empty">Este jugador todavía no ha jugado partidas.</div>';
+  } else if(anaMode === 'general'){
+    // ---- ANÁLISIS GENERAL: todo el recorrido consolidado ----
+    const t = list.reduce((a,x) => ({pj:a.pj + x.r.pj, pg:a.pg + x.r.pg, pe:a.pe + x.r.pe, pp:a.pp + x.r.pp, pts:a.pts + x.r.pts,
+      streak:Math.max(a.streak, x.r.streak), titles:a.titles + x.g.metrics.filter(mt => x.leaders[mt.id].ids.includes(p.id)).length}), {pj:0,pg:0,pe:0,pp:0,pts:0,streak:0,titles:0});
+    const agg = {};   // métricas con el mismo nombre en distintos juegos se suman
+    list.forEach(x => x.g.metrics.forEach(mt => {
+      const k = mt.name.trim().toLowerCase(), a = agg[k] || (agg[k] = {name:mt.name, total:0, parts:[]}), v = x.r.met[mt.id] || 0;
+      a.total += v; a.parts.push(esc(x.g.name) + ': ' + v);
+    }));
+    const mets = Object.values(agg).map(a => `<div class="metric"><div>${esc(a.name)}<br><small style="color:var(--muted)">${a.parts.join(' · ')}</small></div><span class="num">${a.total}</span></div>`).join('') || '<div class="empty">Sus juegos no tienen métricas.</div>';
+    const per = list.map(x => `<div class="metric"><div>${esc(x.g.name)}</div><span style="font-size:.85rem">${x.r.pj} PJ · <b style="color:var(--gold)">${x.r.pts} pts</b> · ${x.r.pct.toFixed(0)}%</span></div>`).join('');
+    body = `<div class="kpis">${kpi(t.pts, 'Puntos totales')}${kpi((t.pj ? t.pg / t.pj * 100 : 0).toFixed(0) + '%', '% victoria global')}${kpi(t.pj, 'Partidas')}
+      ${kpi(t.pg + ' / ' + t.pe + ' / ' + t.pp, 'G / E / P')}${kpi(list.length, 'Juegos')}${kpi(t.streak, 'Mejor racha')}${kpi(t.titles, 'Títulos 🏆')}</div>
+      <h3 class="sub">Métricas acumuladas (todos los juegos)</h3>${mets}<h3 class="sub">Resumen por juego</h3>${per}`;
+  } else {
+    // ---- ANÁLISIS POR JUEGO: solo el juego elegido ----
+    if(!list.some(x => x.g.id === anaGame)) anaGame = list[0].g.id;
+    const x = list.find(y => y.g.id === anaGame), r = x.r;
+    const mets = x.g.metrics.map((mt,i) => {
+      const L = x.leaders[mt.id], lead = L.ids.includes(p.id);
+      return `<div class="metric ${lead ? 'lead' : ''}"><div>${ICONS[i % ICONS.length]} ${esc(mt.name)}<br><small style="color:var(--muted)">${lead ? (L.ids.length > 1 ? 'Líder compartido' : 'Líder absoluto') : L.ids.length ? 'Líder: ' + L.ids.map(id => esc(nameOf(id))).join(', ') + ' (' + L.max + ')' : 'Sin datos aún'}</small></div>
+        <span class="num">${r.met[mt.id] || 0}</span></div>`;
+    }).join('') || '<div class="empty">Este juego no tiene métricas.</div>';
+    const opps = Object.entries(r.opp || {}).map(([oid,o]) => `<div class="metric"><div>${esc(nameOf(oid))}</div><span style="font-size:.85rem"><b class="w">${o.g}G</b> · ${o.e}E · <b class="l">${o.p}P</b></span></div>`).join('');
+    body = `<label for="anaGameSel">Juego</label><select id="anaGameSel">${list.map(y => `<option value="${y.g.id}" ${y.g.id === anaGame ? 'selected' : ''}>${esc(y.g.name)}</option>`).join('')}</select>
+      <div class="kpis">${kpi(r.pts, 'Puntos')}${kpi(r.pct.toFixed(0) + '%', '% victoria')}${kpi(r.pj, 'Partidas')}${kpi(r.pg, 'Ganadas')}${kpi(r.pe, 'Empatadas')}${kpi(r.pp, 'Perdidas')}${kpi(r.streak, 'Mejor racha')}</div>
+      <h3 class="sub">Métricas de ${esc(x.g.name)}</h3>${mets}<h3 class="sub">Rivales enfrentados</h3>${opps || '<div class="empty">Sin rivales registrados.</div>'}`;
+  }
+  $('analysis').innerHTML = `<div class="afut">${futCard(p)}<div>${info}
+    <div class="mtabs"><button data-mode="general" class="${anaMode === 'general' ? '' : 'off'}">Análisis General</button><button data-mode="juego" class="${anaMode === 'juego' ? '' : 'off'}">Análisis por Juego</button></div>${body}</div></div>`;
+}
+function renderAll(){ renderSelects(); renderGlobal(); renderTable(); renderMetricInputs(); renderHistory(); renderGallery(); renderGames(); renderAnalysis(); }
+
+/* ===== 6. NAVEGACIÓN (SPA) ===== */
+function showView(name){
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'v-' + name)); // la clase active dispara el fade-in
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.view === name));
+  window.scrollTo(0,0);
+  if(name === 'analisis') loadSong(true); else stopSong();   // la música solo suena en Análisis
+}
+function flash(el, text, err){ el.textContent = text; el.className = 'msg' + (err ? ' err' : ''); clearTimeout(el._t); el._t = setTimeout(() => el.textContent = '', 3500); }
+
+/* ===== 7. EVENTOS E INICIO ===== */
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => showView(b.dataset.view));
+// Fila dinámica para escribir una habilidad libre (nombre + valor) al crear el perfil
+function addSkillRow(){
+  const d = document.createElement('div'); d.className = 'srow';
+  d.innerHTML = '<input class="sn1" placeholder="Habilidad (ej. Nivel de excusas)" maxlength="28"><input class="sv1" placeholder="Valor" maxlength="10"><button class="ghost" type="button" title="Quitar">×</button>';
+  d.querySelector('button').onclick = () => d.remove();
+  $('newSkills').appendChild(d);
+}
+$('addSkillRow').onclick = addSkillRow;
+$('addPlayer').onclick = addPlayer; $('addGame').onclick = addGame; $('saveMatch').onclick = saveMatch; $('addMetricRow').onclick = addMetricRow;
+$('rGame').onchange = renderTable;
+// Agregar una estadística nueva al juego desde "Registrar Partida" (queda guardada en el juego)
+function addMetricHere(){
+  const g = game($('mGame').value), n = $('newMetName').value.trim(), msg = $('msgMatch');
+  if(!g) return;
+  if(!n) return flash(msg,'Escribe el nombre de la estadística.',true);
+  if(g.metrics.some(m => m.name.toLowerCase() === n.toLowerCase())) return flash(msg,'Esa estadística ya existe.',true);
+  g.metrics.push({id:uid(), name:n}); $('newMetName').value = '';
+  save(); renderAll(); flash(msg, '"' + n + '" agregada a ' + g.name + '. Ya puedes usarla en esta partida.');
+}
+$('toggleMet').onclick = () => { const r = $('newMetRow'); r.style.display = r.style.display === 'none' ? 'flex' : 'none'; $('newMetName').focus(); };
+$('confirmMet').onclick = addMetricHere;
+$('newMetName').addEventListener('keydown', e => { if(e.key === 'Enter') addMetricHere(); });
+['mGame','p1','p2'].forEach(i => $(i).onchange = renderMetricInputs);
+$('aPlayer').onchange = () => { renderAnalysis(); loadSong(true); };
+$('tbody').addEventListener('click', e => { const tr = e.target.closest('tr[data-id]'); if(tr){ $('aPlayer').value = tr.dataset.id; renderAnalysis(); showView('analisis'); } });
+$('hist').addEventListener('click', e => { const b = e.target.closest('[data-del]'); if(b && confirm('¿Eliminar esta partida?')) deleteMatch(b.dataset.del); });
+$('gameList').addEventListener('click', e => {
+  const a = e.target.closest('[data-addm]'), d = e.target.closest('[data-delg]');
+  if(a) addMetricToGame(a.dataset.addm); if(d) deleteGame(d.dataset.delg);
+});
+// Acciones dentro de las tarjetas de la galería (delegación de eventos)
+$('gallery').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if(!b) return;
+  const card = b.closest('.gcell'), act = b.dataset.act, pid = b.dataset.pid;
+  if(act === 'addstat'){ card.querySelector('.cform').classList.toggle('open'); card.querySelector('.cn').focus(); }
+  else if(act === 'savestat') addCustomStat(pid, card.querySelector('.cn').value, card.querySelector('.cv').value);
+  else if(act === 'delstat') deleteCustomStat(pid, b.dataset.sid);
+  else if(act === 'delp') deletePlayer(pid);
+  else if(act === 'analyze'){ $('aPlayer').value = pid; renderAnalysis(); showView('analisis'); }
+});
+$('gbody').addEventListener('click', e => { const tr = e.target.closest('tr[data-id]'); if(tr){ $('aPlayer').value = tr.dataset.id; renderAnalysis(); showView('analisis'); } });
+
+/* ===== Reproductor de YouTube (IFrame API): canción de entrada del jugador ===== */
+// Extrae el ID de 11 caracteres desde cualquier formato de enlace de YouTube
+function ytId(url){
+  url = (url || '').trim();
+  if(!url) return '';
+  if(/^[\w-]{11}$/.test(url)) return url;                       // ya es un ID
+  try{
+    const u = new URL(/^https?:\/\//i.test(url) ? url : 'https://' + url);
+    const host = u.hostname.replace(/^(www|m|music)\./, '');
+    let id = '';
+    if(host === 'youtu.be') id = u.pathname.slice(1).split('/')[0];
+    else if(host === 'youtube.com' || host === 'youtube-nocookie.com'){
+      id = u.searchParams.get('v') || ((u.pathname.match(/^\/(?:embed|shorts|live|v)\/([\w-]{11})/) || [])[1] || '');
+    }
+    return /^[\w-]{11}$/.test(id) ? id : '';
+  }catch(e){ return ''; }
+}
+
+let yt = null, ytApiReady = false, ytPlayerReady = false, want = null;   // want = {id, autoplay, name}
+const setInfo = t => { $('songInfo').textContent = t; };
+const volume = () => parseInt($('vol').value) || 0;
+
+function loadYTApi(){                           // carga https://www.youtube.com/iframe_api una sola vez
+  if(document.getElementById('ytApi')) return;
+  const t = document.createElement('script'); t.id = 'ytApi'; t.src = 'https://www.youtube.com/iframe_api';
+  t.onerror = () => setInfo('No se pudo cargar YouTube. Revisa tu conexión a internet.');
+  document.head.appendChild(t);
+}
+window.onYouTubeIframeAPIReady = () => { ytApiReady = true; applyWant(); };   // callback global que exige la API
+
+// Lleva el reproductor al estado deseado (crea el player la primera vez)
+function applyWant(){
+  if(!want) return;
+  if(!ytApiReady){ loadYTApi(); return; }
+  if(!yt){
+    const vars = {controls:0, disablekb:1, playsinline:1, rel:0};
+    if(/^https?:/.test(location.protocol)) vars.origin = location.origin;
+    yt = new YT.Player('ytHost', {width:'1', height:'1', playerVars:vars, events:{
+      onReady: e => { ytPlayerReady = true; e.target.setVolume(volume()); applyWant(); },
+      onStateChange: onYtState,
+      onError: () => setInfo(location.protocol === 'file:'
+        ? 'YouTube rechazó el video. Abre la app desde un servidor local o un hosting (no como archivo) y revisa que el video permita incrustarse.'
+        : 'No se pudo reproducir este video (puede no permitir incrustarse).')
+    }});
+    return;
+  }
+  if(!ytPlayerReady) return;                    // se aplicará en onReady
+  yt.setVolume(volume());
+  if(want.autoplay) yt.loadVideoById(want.id); else yt.cueVideoById(want.id);
+  setInfo('♪ Canción de entrada de ' + want.name);
+  if(want.autoplay) setTimeout(() => {          // si el navegador bloqueó el autoplay, avisar
+    if(want && yt && ytPlayerReady && ![1,3].includes(yt.getPlayerState())) setInfo('Pulsa ▶ para reproducir (el navegador bloqueó el autoplay).');
+  }, 2500);
+}
+function onYtState(e){
+  const S = YT.PlayerState;
+  if(e.data === S.PLAYING) $('playBtn').textContent = '⏸';
+  else if(e.data === S.PAUSED || e.data === S.CUED) $('playBtn').textContent = '▶';
+  else if(e.data === S.ENDED){ $('playBtn').textContent = '▶'; yt.seekTo(0); yt.playVideo(); }   // repetir en bucle
+}
+// Abre la canción del jugador seleccionado en Análisis
+function loadSong(autoplay){
+  const p = player($('aPlayer').value), id = p ? ytId(p.song) : '';
+  if(!id){ want = null; stopSong(); setInfo(p ? (p.song ? 'El enlace de YouTube de este jugador no es válido.' : 'Este jugador no tiene canción de entrada.') : ''); return; }
+  want = {id, autoplay, name:p.name};
+  setInfo('Cargando canción…');
+  applyWant();
+}
+function stopSong(){ if(yt && ytPlayerReady) yt.pauseVideo(); }
+// Controles propios -> API de YouTube
+$('playBtn').onclick = () => {
+  if(!yt || !ytPlayerReady || !want) return;
+  if(yt.getPlayerState() === YT.PlayerState.PLAYING) yt.pauseVideo(); else yt.playVideo();
+};
+$('vol').oninput = () => { $('volVal').textContent = volume() + '%'; if(yt && ytPlayerReady) yt.setVolume(volume()); };
+
+// Cambio de modo y de juego dentro del Análisis (no toca la música)
+$('analysis').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if(b){ anaMode = b.dataset.mode; renderAnalysis(); } });
+$('analysis').addEventListener('change', e => { if(e.target.id === 'anaGameSel'){ anaGame = e.target.value; renderAnalysis(); } });
+
+addMetricRow();
+addSkillRow();
+renderAll();
+</script>
+</body>
+</html>
